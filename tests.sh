@@ -1,6 +1,9 @@
-#! /usr/bin/env bats
+# ---------------------------------------------------#
+# File created by Attempeux on Jan 16 2023 program.  #
+# Unit tests.                                        #
+# ---------------------------------------------------#
 
-set -e
+#! /usr/bin/env bats
 
 @test "text to morse (1)" {
     run="$(./moasm T "hi")"
