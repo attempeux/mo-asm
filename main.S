@@ -15,9 +15,6 @@
     .translate:
     .string "msg: '%s' (%ldB).\n"
 
-    .unknown_character:
-    .string "\nmo-asm: error: unknown '%c' character\n"
-    
     .print_morse:
     .string "%s "
 
@@ -179,18 +176,10 @@ text_to_morse:
     movq    $0, -24(%rbp)
     jmp     __loopcond
 
-# --- (L): Exists if there is a non-alphabetic character.
-__unknown_ch:
-    movl    %r8d, %esi
-    leaq    .unknown_character(%rip), %rdi
-    call    printf
-    movl    $1, %eax
-    call    exit
-
 # --- (L): Since the conditional checks for alpaha characters only it would
 #          throw error for space, so it is a special case.
-__is_space:
-    movl    $'/', %edi
+__is_not_alpha:
+    movl    %r8d, %edi
     call    putchar
     jmp     __continue
 
@@ -202,12 +191,10 @@ __loopbody:
     addq    %rdx, %rax
     movzbl  (%rax), %r8d
     movl    %r8d, %edi
-    cmpl    $' ', %r8d
-    je      __is_space
     movl    %r8d, %edi
     call    isalpha
     cmpl    $0, %eax
-    je      __unknown_ch
+    je      __is_not_alpha
     movl    %r8d, %edi
     call    tolower
     subl    $'a', %eax
