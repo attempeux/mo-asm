@@ -11,9 +11,6 @@
     .err_unknown_mode:
     .string "mo-asm: error: unknown mode: %c.\n"
 
-    .translate:
-    .string "msg: '%s' (%ldB).\n"
-
     .print_morse:
     .string "%s "
 
@@ -162,18 +159,21 @@ text_to_morse:
     movq    %rax, %rdi
     call    strlen
     movq    %rax, -16(%rbp)
-    movq    -16(%rbp), %rdx
-    movq    -8(%rbp), %rax
-    movq    %rax, %rsi
-    leaq    .translate(%rip), %rax
-    movq    %rax, %rdi
-    call    printf
     movq    $0, -24(%rbp)
     jmp     __loopcond
 
 # --- (L): Since the conditional checks for alpaha characters only it would
 #          throw error for space, so it is a special case.
+__print_space:
+    movl    $'/', %edi
+    call    putchar
+    movl    $' ', %edi
+    call    putchar
+    jmp     __continue
+
 __is_not_alpha:
+    cmpl    $' ', %r8d
+    je      __print_space
     movl    %r8d, %edi
     call    putchar
     jmp     __continue
@@ -228,12 +228,6 @@ morse_to_text:
     movq    %rax, %rdi
     call    strlen
     movq    %rax, -16(%rbp)
-    movq    -16(%rbp), %rdx
-    movq    -8(%rbp), %rax
-    movq    %rax, %rsi
-    leaq    .translate(%rip), %rax
-    movq    %rax, %rdi
-    call    printf
     movl    $0, -28(%rbp)
     movl    $0, -33(%rbp)
     jmp     _loopcond

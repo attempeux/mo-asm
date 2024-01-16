@@ -1,0 +1,14 @@
+ ________
+< mo-asm >
+ --------
+        \   ^__^
+         \  (@@)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+    Simple morse decoder and encoder written in x86_64 assembly, if you want to try just type make.
+    ./moasm [MODE] "[message]"
+    The mode can either be M to go from morse to text, or T to go from text to morse.
+
+    Attempeux Jan 16 2024.
