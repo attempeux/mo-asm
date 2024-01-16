@@ -2,7 +2,6 @@
 # File created by Attempeux on Jan 15 2023 program.  #
 # Main file to mo-asm program.                       #
 # ---------------------------------------------------#
-
 .text
 .section .rodata
 
@@ -17,9 +16,6 @@
 
     .print_morse:
     .string "%s "
-
-    .help2:
-    .string "morse to text."
 
     # --- Morse codes.
     .Ma: .string ".-"
@@ -74,6 +70,7 @@
     .quad   .Ms
     .quad   .Mt
     .quad   .Mu
+    .quad   .Mv
     .quad   .Mw
     .quad   .Mx
     .quad   .My
@@ -161,7 +158,6 @@ text_to_morse:
     movq    %rsp, %rbp
     subq    $32, %rsp
     movq    %rdi, -8(%rbp)
-
     movq    -8(%rbp), %rax
     movq    %rax, %rdi
     call    strlen
@@ -172,7 +168,6 @@ text_to_morse:
     leaq    .translate(%rip), %rax
     movq    %rax, %rdi
     call    printf
-
     movq    $0, -24(%rbp)
     jmp     __loopcond
 
@@ -218,10 +213,105 @@ __loopcond:
     ret
 
 # --- (F): Function to translate from morse to text.
+#         -8(%rbp): String to parse.
+#         -16(%rbp): Length of the string.
+#         -24(%rbp): Current position of the string aka i.
+#         -28(%rbp): Nth character of the current code.
+#         -[29..33](%rbp): Current morse code.
+#         -38(%rbp): Looking for the translation index aka j.
 morse_to_text:
     pushq   %rbp
     movq    %rsp, %rbp
-    leaq    .help2(%rip), %rdi
-    call    puts
+    subq    $48, %rsp
+    movq    %rdi, -8(%rbp)
+    movq    -8(%rbp), %rax
+    movq    %rax, %rdi
+    call    strlen
+    movq    %rax, -16(%rbp)
+    movq    -16(%rbp), %rdx
+    movq    -8(%rbp), %rax
+    movq    %rax, %rsi
+    leaq    .translate(%rip), %rax
+    movq    %rax, %rdi
+    call    printf
+    movl    $0, -28(%rbp)
+    movl    $0, -33(%rbp)
+    jmp     _loopcond
+
+# --- (L): Print the current code as text.
+_print_such:
+    movl    -38(%rbp), %edi
+    addl    $'a', %edi
+    call    putchar
+    jmp     _end_eval
+
+# --- (L): Try to find the correct translation.
+_look_for_translation_body: 
+    movl    -38(%rbp), %eax
+    cltq
+	leaq	0(,%rax,8), %rdx
+	leaq	.morse_codes(%rip), %rax
+	movq	(%rdx, %rax), %rax
+	movq	%rax, %rdi
+    leaq    -33(%rbp), %rsi
+    movq    -28(%rbp), %rdx
+    call    strcmp
+    cmpq    $0, %rax
+    je      _print_such
+    incl    -38(%rbp)
+
+# --- (L): Just itering.
+_look_for_translation_condition:
+    cmpl    $26, -38(%rbp)
+    jl      _look_for_translation_body
+
+# --- (L): Sets all to zero and continues the main loop
+#          looking for more codes.
+_end_eval:
+    leaq    -33(%rbp), %rdi
+    movq    $0, %rsi
+    movq    $4, %rdx
+    call    memset
+    movl    $0, -28(%rbp)
+    movl    $0, -38(%rbp)
+    jmp     _continue
+
+# --- (L): If the current character is a space or the nth chracter is equals to
+#          four then it means there's already a code to be evaluated.
+_evaluate: 
+    cmpl    $0, -28(%rbp)
+    je      _continue
+    jmp     _look_for_translation_condition
+
+# --- (L): If the current character is a '/' it means a space in normal text.
+_print_space:
+    movl    $' ', %edi
+    call    putchar
+    jmp     _continue
+
+_loopbody: 
+    movq    -8(%rbp), %rax
+    movq    -24(%rbp), %rdx
+    addq    %rdx, %rax
+    movzbl  (%rax), %eax
+    cmpl    $'/', %eax
+    je      _print_space
+    cmpl    $' ', %eax
+    je      _evaluate
+    cmpl    $4, -28(%rbp)
+    je      _evaluate
+    movl    %eax, %edx
+    movl    -28(%rbp), %eax
+    movb    %dl, -33(%rbp, %rax)
+    incl    -28(%rbp)
+
+_continue:
+    incq    -24(%rbp)
+
+_loopcond:
+    movq    -24(%rbp), %rax
+    cmpq    -16(%rbp), %rax
+    jle     _loopbody
+    nop
     leave
     ret
