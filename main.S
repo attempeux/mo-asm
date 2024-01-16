@@ -10,47 +10,112 @@
     .string "mo-asm: usage: %s [mode] [message].\n\tmode: [M | T]\n\tmessage to translate.\n"
 
     .err_unknown_mode:
-    .string "mo-asm: unknown mode: %c.\n"
+    .string "mo-asm: error: unknown mode: %c.\n"
 
-    .help1:
-    .string "text to morse."
+    .translate:
+    .string "msg: '%s' (%ldB).\n"
+
+    .unknown_character:
+    .string "\nmo-asm: error: unknown '%c' character\n"
+    
+    .print_morse:
+    .string "%s "
 
     .help2:
     .string "morse to text."
 
+    # --- Morse codes.
+    .Ma: .string ".-"
+    .Mb: .string "-..."
+    .Mc: .string "-.-."
+    .Md: .string "-.."
+    .Me: .string "."
+    .Mf: .string "..-."
+    .Mg: .string "--."
+    .Mh: .string "...."
+    .Mi: .string ".."
+    .Mj: .string ".---"
+    .Mk: .string "-.-"
+    .Ml: .string ".-.."
+    .Mm: .string "--"
+    .Mn: .string "-."
+    .Mo: .string "---"
+    .Mp: .string ".--."
+    .Mq: .string "--.-"
+    .Mr: .string ".-."
+    .Ms: .string "..."
+    .Mt: .string "-"
+    .Mu: .string "..-"
+    .Mv: .string "...-"
+    .Mw: .string ".--"
+    .Mx: .string "-..-"
+    .My: .string "-.--"
+    .Mz: .string "--.."
+
+	.section    .data.rel.local, "aw"
+    .align      32
+    .size       .morse_codes, 208
+    .morse_codes:
+    .quad   .Ma
+    .quad   .Mb
+    .quad   .Mc
+    .quad   .Md
+    .quad   .Me
+    .quad   .Mf
+    .quad   .Mg
+    .quad   .Mh
+    .quad   .Mi
+    .quad   .Mj
+    .quad   .Mk
+    .quad   .Ml
+    .quad   .Mm
+    .quad   .Mn
+    .quad   .Mo
+    .quad   .Mp
+    .quad   .Mq
+    .quad   .Mr
+    .quad   .Ms
+    .quad   .Mt
+    .quad   .Mu
+    .quad   .Mw
+    .quad   .Mx
+    .quad   .My
+    .quad   .Mz
 
 .text
 .globl main
 
-
-
 # --- (F) Main function.
+#       -4(%rbp): Saves number of arguments.
+#       -12(%rbp): Saves the arguments.
+#       -20(%rbp): Mode to use.
+#       -28(%rbp): Message to convert.
 main:
     pushq   %rbp
     movq    %rsp, %rbp
     subq    $32, %rsp
 
-    # --- (I): Saving arguments aka argc and argv.
     movl    %edi, -4(%rbp)
     movq    %rsi, -12(%rbp)
     cmpl    $3, -4(%rbp)
     jne     no_args
 
-    # --- (I): Saving the mode at -20(%rbp) and message at -28(%rbp)
     movq    -12(%rbp), %rax
     movq    8(%rax), %rax
     movq    %rax, -20(%rbp)
+    movq    -12(%rbp), %rax
     movq    16(%rax), %rax
     movq    %rax, -28(%rbp)
 
-    # --- (I): Figure out what operation perform.
     movq    -20(%rbp), %rax
+    movq    %rax, %rdi
     movzbl  (%rax), %eax
     cmpb    $'T', %al
     jne     no_text_to_morse
+
+    movq    -28(%rbp), %rdi
     call    text_to_morse
     jmp     leave_main
-
 
 # -- (L): No arguments were given to the program, therefore
 #         print the usage and exit.
@@ -68,6 +133,7 @@ no_args:
 no_text_to_morse:
     cmpb    $'M', %al
     jne     no_known_mode
+    movq    -28(%rbp), %rdi
     call    morse_to_text
     jmp     leave_main
 
@@ -83,16 +149,84 @@ no_known_mode:
 
 # --- (L): End main function once the program has finished.
 leave_main:
+    movl    $10, %edi
+    call    putchar
     movl    $0, %eax
     leave
     ret
 
 # --- (F): Function to translate from text to morse.
+#         -8(%rbp): String to be converted.
+#         -16(%rbp): Size of such string.
+#         -24(%rbp): aka i.
 text_to_morse:
     pushq   %rbp
     movq    %rsp, %rbp
-    leaq    .help1(%rip), %rdi
-    call    puts
+    subq    $32, %rsp
+    movq    %rdi, -8(%rbp)
+
+    movq    -8(%rbp), %rax
+    movq    %rax, %rdi
+    call    strlen
+    movq    %rax, -16(%rbp)
+    movq    -16(%rbp), %rdx
+    movq    -8(%rbp), %rax
+    movq    %rax, %rsi
+    leaq    .translate(%rip), %rax
+    movq    %rax, %rdi
+    call    printf
+
+    movq    $0, -24(%rbp)
+    jmp     __loopcond
+
+# --- (L): Exists if there is a non-alphabetic character.
+__unknown_ch:
+    movl    %r8d, %esi
+    leaq    .unknown_character(%rip), %rdi
+    call    printf
+    movl    $1, %eax
+    call    exit
+
+# --- (L): Since the conditional checks for alpaha characters only it would
+#          throw error for space, so it is a special case.
+__is_space:
+    movl    $'/', %edi
+    call    putchar
+    jmp     __continue
+
+# --- (L): Get the current character and try to parse it to morse code.
+#          %r8d: gonna save the current character.
+__loopbody:
+    movq    -8(%rbp), %rdx
+    movq    -24(%rbp), %rax
+    addq    %rdx, %rax
+    movzbl  (%rax), %r8d
+    movl    %r8d, %edi
+    cmpl    $' ', %r8d
+    je      __is_space
+    movl    %r8d, %edi
+    call    isalpha
+    cmpl    $0, %eax
+    je      __unknown_ch
+    movl    %r8d, %edi
+    call    tolower
+    subl    $'a', %eax
+	leaq	0(,%rax,8), %rdx
+	leaq	.morse_codes(%rip), %rax
+	movq	(%rdx,%rax), %rax
+	movq	%rax, %rsi
+    leaq    .print_morse(%rip), %rdi
+	call	printf
+
+__continue:
+    incq    -24(%rbp)
+
+# --- (L): As long as there's characters this label will be reached.
+__loopcond:
+    movq    -24(%rbp), %rax
+    cmpq    -16(%rbp), %rax
+    jl      __loopbody
+    nop
     leave
     ret
 
