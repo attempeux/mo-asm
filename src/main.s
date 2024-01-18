@@ -1,6 +1,6 @@
 # ---------------------------------------------------#
 # File created by Attempeux on Jan 15 2024 program.  #
-# Main file to mo-asm program.                       #
+# Main file of mo-asm program.                       #
 # ---------------------------------------------------#
 .section .rodata
     .str_usage:
