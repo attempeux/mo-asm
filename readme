@@ -16,9 +16,9 @@
     make
     ./moasm [MODE] "[message]"
 
-    Mode can be either M or T, M goes from morse to text and T makes the opposite; if T mode
-    is used then, it will only print alphabetic characters aka [a-zA-Z] other ones will print as
-    they are.
+    Mode can be either M or T, M goes from morse to text and T makes the opposite operation;
+    if T mode is selected, it will only print alphabetic characters ([a-zA-Z]) in its morse
+    version; other character will be printed without conversion.
 
     -*- References -*-
     Program starup process: https://0xax.gitbooks.io/linux-insides/content/Misc/linux-misc-4.html
