@@ -99,7 +99,7 @@ _start:
     # -*---------------------------------#
     movl    8(%rbp), %eax
     cmpl    $3, %eax
-    jne     no_args_exit
+    jnz     no_args_exit
     # -*---------------------------------#
     # Saving values into the stack.      #
     # -*---------------------------------#
@@ -113,7 +113,7 @@ _start:
     movq    -8(%rbp), %rax
     movzbl  (%rax), %eax
     cmpl    $'T', %eax
-    jne     check_for_other_mode
+    jnz     check_for_other_mode
     movq    -16(%rbp), %rdi
     call    fx_t_2_m
 
@@ -132,7 +132,7 @@ fini_main:
     syscall
 
 # -*------------------------------------#
-# Exit the program, cannot proceed.     #
+# Exit the program; cannot proceed.     #
 # -*------------------------------------#
 no_args_exit:
     movq    $1, %rax
@@ -149,7 +149,7 @@ no_args_exit:
 # -*------------------------------------#
 check_for_other_mode:
     cmpl    $'M', %eax
-    jne     unknown_mode
+    jnz     unknown_mode
     movq    -16(%rbp), %rdi
     call    fx_m_2_t
     jmp     fini_main
@@ -188,14 +188,14 @@ fx_t2m_inc:
 fx_t2m_eval_char:
     movq    %r8, %r10
     cmpb    $0, (%r8)
-    je      fini_t2m
+    jz      fini_t2m
     # -*---------------------------------------#
     # Non-alpha chars are printed as they are. #
     # -*---------------------------------------#
     movzbl  (%r8), %edi
     call    fx_isalpha
     cmpl    $0, %eax
-    je      fx_print_nonalpha
+    jz      fx_print_nonalpha
     # -*---------------------------------------#
     # Get index of current character.          #
     # -*---------------------------------------#

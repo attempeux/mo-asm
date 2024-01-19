@@ -35,16 +35,16 @@ fx_isalpha:
     pushq   %rbp
     movq    %rsp, %rbp
     cmpl    $64, %edi
-    jle     fx_isalpha_no
+    jbe     fx_isalpha_no
     cmpl    $123, %edi
-    jge     fx_isalpha_no
+    jae     fx_isalpha_no
     cmpl    $91, %edi
-    jge     fx_isalpha_between
+    jae     fx_isalpha_between
     cmpl    $122, %edi
-    jle     fx_isalpha_yes
+    jbe     fx_isalpha_yes
 fx_isalpha_between:
     cmpl    $96, %edi
-    jle     fx_isalpha_no
+    jbe     fx_isalpha_no
     jmp     fx_isalpha_yes
 fx_isalpha_no:
     movl    $0, %eax
@@ -62,7 +62,7 @@ fx_2lower:
     pushq   %rbp
     movq    %rsp, %rbp
     cmpl    $'a', %edi
-    jge     fini_2lower
+    jae     fini_2lower
     addl    $32, %edi
 fini_2lower:
     movl    %edi, %eax
@@ -71,8 +71,7 @@ fini_2lower:
 
 # -*---------------------------------------#
 # Compares code with nth code found.       #
-# strcmp but in assembly, not implemented  #
-# by me.                                   #
+# strcmp produced by gcc compiler.         #
 # -*---------------------------------------#
 fx_cmpstrs:
 	pushq	%rbp
