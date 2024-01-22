@@ -1,32 +1,22 @@
-                                                                             ________
-                                                                            < mo-asm >
-                                                                             --------
-                                                                                    \   ^__^
-                                                                                     \  (@@)\_______
-                                                                                        (__)\       )\/\
-                                                                                            ||----w |
-                                                                                            ||     ||
-
-    -*- About -*-
-    Morse encoder and decoder written in x86_64 assembly using AT&T syntax, therefore assembly
-    with `as` assembler, there is a makefile anyway.
-
-    -*- Run it -*-
-    cd src/
-    make
-    ./moasm [MODE] "[message]"
-
-    Mode can be either M or T, M goes from morse to text and T makes the opposite operation;
-    if T mode is selected, it will only print alphabetic characters ([a-zA-Z]) in its morse
-    version; other character will be printed without conversion.
-
-    -*- References -*-
-    Program starup process: https://0xax.gitbooks.io/linux-insides/content/Misc/linux-misc-4.html
+ 
+    -*- moasm -*-
+    Moasam is an encoder/decoder of morse code, it is written in x86 assembly using
+    AT&T syntax. It got two modes; M which is used to translate morse to alphabetic
+    characters such as ".... .." to "hi" and T mode which reverses the operation.
 
     -*- Dependencies -*-
-    - as
-    - make
-    - ld
-    - bats-core (For unit tests)
+    - as.
+    - ld.
+    - make.
+    - bats-core (for unit tests if you want to).
 
-    Attempeux Jan 17 2024.
+    -*- References -*-
+    - About morse code: https://simple.wikipedia.org/wiki/Morse_code
+    - Program startup: https://0xax.gitbooks.io/linux-insides/content/Misc/linux-misc-4.html
+
+    -*- To Do -*-
+    - ./moasm M message.                      (attempeux 24 Jan)
+    - ./moasm T message.                      (attempeux 24 Jan)
+
+    By: attempeux.
+    last update: Jan 21 2024.

@@ -65,3 +65,4 @@
     expc="$(echo "we love asm")"
     [[ "$run" == "$expc" ]]
 }
+

@@ -1,17 +1,15 @@
-# ---------------------------------------------------#
-# File created by Attempeux on Jan 16 2024 program.  #
-# Makefile.                                          #
-# ---------------------------------------------------#
-objs = main.o help.o
+# -*-
+# Attempeux Jan 21 2024.
+# Makefile.
+# -*-
+
+objs = main.o util.o
 
 moasm: $(objs)
 	ld -o moasm $(objs)
-
 main.o: main.s
-	as -o main.o -g main.s
-
-help.o: help.s
-	as -o help.o -g help.s
-
+	as -o main.o main.s
+util.o: util.s
+	as -o util.o util.s
 clear:
 	rm -f $(objs) moasm
